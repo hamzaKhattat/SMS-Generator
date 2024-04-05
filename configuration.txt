@@ -1,0 +1,9 @@
+[config]
+ip= 94.46.204.9
+port=31133
+username= 19111_TEST_VNZL
+password= WCJJ7psS
+files=csv_sample.csv
+repeat=True
+SMS/sec=10
+Total=100

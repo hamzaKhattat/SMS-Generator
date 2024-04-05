@@ -1,0 +1,53 @@
+#!/bin/bash
+
+sudo yum update && yum upgrade -y
+
+# Check if MySQL is installed
+
+if ! command -v mysql &> /dev/null; then
+
+    echo "MySQL is not installed. Installing..."
+
+    sudo yum install -y mysql-server
+
+    sudo systemctl start mysqld
+
+    sudo systemctl enable mysqld
+
+    sudo grep 'temporary password' /var/log/mysqld.log
+
+else
+
+    echo "MySQL is already installed."
+
+fi
+
+# Run MySQL commands to create schema and users
+
+mysql -u root -p << EOF
+
+
+
+DROP DATABASE IF EXISTS templates;
+
+CREATE DATABASE IF NOT EXISTS templates DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+
+EOF
+
+sudo yum install ufw git python3 -y
+
+sudo yum install epel-release -y
+
+sudo yum install snapd -y
+
+sudo yum upgrade python3 -y
+
+sudo systemctl enable --now snapd.socket
+
+sudo ln -s /var/lib/snapd/snap /snap
+
+sudo yum install python3 python3-pip -y
+
+pip3 install mysql-connector-python smpplib
+
+sudo pip3 install mysql-connector-python smpplib
