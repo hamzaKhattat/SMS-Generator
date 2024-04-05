@@ -1,53 +1,49 @@
 #!/bin/bash
 
-sudo yum update && yum upgrade -y
-
-# Check if MySQL is installed
-
-if ! command -v mysql &> /dev/null; then
-
-    echo "MySQL is not installed. Installing..."
-
-    sudo yum install -y mysql-server
-
-    sudo systemctl start mysqld
-
-    sudo systemctl enable mysqld
-
-    sudo grep 'temporary password' /var/log/mysqld.log
-
-else
-
-    echo "MySQL is already installed."
-
+# Check if running as root
+if [ "$(id -u)" -ne 0 ]; then
+    echo "Please run this script as root"
+    exit 1
 fi
 
-# Run MySQL commands to create schema and users
+# Update the package list
+yum update -y
 
-mysql -u root -p << EOF
+# Install development tools
+yum groupinstall -y 'Development Tools'
 
+# Install dependencies
+yum install -y wget openssl-devel libffi-devel zlib-devel
 
+# Download Python 3.9 source
+wget https://www.python.org/ftp/python/3.9.7/Python-3.9.7.tgz
 
-DROP DATABASE IF EXISTS templates;
+# Extract Python source
+tar -xf Python-3.9.7.tgz
 
-CREATE DATABASE IF NOT EXISTS templates DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+# Navigate into Python source directory
+cd Python-3.9.7
 
-EOF
+# Configure Python installation
+./configure --enable-optimizations
 
-sudo yum install ufw git python3 -y
+# Build and install Python
+make altinstall
 
-sudo yum install epel-release -y
-
-sudo yum install snapd -y
-
-sudo yum upgrade python3 -y
-
-sudo systemctl enable --now snapd.socket
-
-sudo ln -s /var/lib/snapd/snap /snap
-
-sudo yum install python3 python3-pip -y
+# Clean up downloaded files
+cd ..
+rm -rf Python-3.9.7*
+  
+# Verify Python3 installation
+python3.9 --version
+sudo rm -r /usr/bin/python3
+sudo ln -s /usr/local/bin/python3.9 /usr/bin/python3
+sudo yum install python3-pip
 
 pip3 install mysql-connector-python smpplib
 
 sudo pip3 install mysql-connector-python smpplib
+
+# Run sms_generator.py
+echo "Running sms_generator.py..."
+sudo python3.9 sms_generator.py
